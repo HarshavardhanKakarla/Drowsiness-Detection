@@ -1,0 +1,9 @@
+{
+    "timestamp": "20250830_201446",
+    "session_duration": 14.528260231018066,
+    "total_blinks": 0,
+    "total_yawns": 0,
+    "drowsiness_events": 0,
+    "ear_threshold": 0.3,
+    "mar_threshold": 0.6
+}
