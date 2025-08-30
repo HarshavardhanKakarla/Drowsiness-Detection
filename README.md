@@ -2,7 +2,7 @@
 
 A comprehensive, production-ready drowsiness detection system that works entirely offline using computer vision and machine learning. No internet connection or cloud services required.
 
-## 🌟 Features
+## Features
 
 - **🔍 Real-time Detection**: Eye Aspect Ratio (EAR) and Mouth Aspect Ratio (MAR) monitoring
 - **🔄 Offline Operation**: Complete functionality without internet connectivity
@@ -274,5 +274,6 @@ For technical support:
 
 **🚗 Drive Safe, Stay Alert!** 
 
-This system is designed to enhance safety through technology, providing reliable drowsiness detection without compromising privacy or requiring internet connectivity.#   D r o w s i n e s s - D e t e c t i o n  
+This system is designed to enhance safety through technology, providing reliable drowsiness detection without compromising privacy or requiring internet connectivity.#   D r o w s i n e s s - D e t e c t i o n 
+ 
  
