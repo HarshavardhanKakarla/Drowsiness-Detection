@@ -6,6 +6,8 @@ numpy==1.24.3
 # Web Interface  
 streamlit==1.28.1
 streamlit-extras==0.3.2
+# Real-time browser webcam streaming
+streamlit-webrtc==0.54.0
 
 # Data Processing
 pandas==2.0.3

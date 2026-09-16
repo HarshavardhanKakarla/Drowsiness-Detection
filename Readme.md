@@ -91,6 +91,10 @@ drowsiness_detection_system/
 - **Session Management**: Save, reset, and export session data
 - **Responsive Design**: Works on desktop and tablet
 
+> Tip: For real-time browser webcam streaming install the optional dependency `streamlit-webrtc` (`pip install streamlit-webrtc` or `pip install -r requirements.txt`). If your editor shows `Import "streamlit_webrtc" could not be resolved`, ensure it's installed in the active Python environment.
+
+> For real-time webcam streaming in the browser install the optional dependency `streamlit-webrtc` (`pip install streamlit-webrtc`). Then select **Live Camera (webcam)** in the app.
+
 ### Standalone OpenCV Application
 - **Lightweight**: Minimal resource usage
 - **Direct Processing**: No web browser required
