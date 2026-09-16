@@ -201,7 +201,14 @@ elif MODE == "Live Camera (webcam)":
         st.error("streamlit-webrtc is not installed. Install it with `pip install streamlit-webrtc` and restart the app.")
     else:
         st.write("Live webcam — processing frames in real time. Press 'Stop' to end the stream.")
-        webrtc_streamer(key="live", mode=WebRtcMode.SENDRECV, video_transformer_factory=DrowsinessTransformer)
+        webrtc_streamer(
+            key="live",
+            mode=WebRtcMode.SENDRECV,
+            video_transformer_factory=DrowsinessTransformer,
+            rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+            media_stream_constraints={"video": True, "audio": False},
+            async_processing=True,
+        )
 
 elif MODE == "Camera (single shot)":
     process_camera_single_shot()
