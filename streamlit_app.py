@@ -206,7 +206,7 @@ elif MODE == "Live Camera (webcam)":
             mode=WebRtcMode.SENDRECV,
             video_transformer_factory=DrowsinessTransformer,
             rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
-            media_stream_constraints={"video": True, "audio": False},
+            media_stream_constraints={"video": True, "audio": True},
             async_processing=True,
         )
 
