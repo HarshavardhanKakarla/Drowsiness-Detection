@@ -1,208 +1,161 @@
-# 🚗 Offline Drowsiness Detection System
+# Drowsiness Detection
 
-A comprehensive, production-ready drowsiness detection system that works entirely offline using computer vision and machine learning. No internet connection or cloud services required.
+A Python computer-vision project that estimates eye and mouth movement from facial landmarks to flag possible drowsiness and yawning. It includes a Streamlit interface for image, video, camera, and stream inputs, a standalone OpenCV webcam application, and tools for reviewing saved session data.
 
-## 🌟 Features
+## Features
 
-- **🔍 Real-time Detection**: Eye Aspect Ratio (EAR) and Mouth Aspect Ratio (MAR) monitoring
-- **🔄 Offline Operation**: Complete functionality without internet connectivity
-- **📱 Multiple Interfaces**: Web-based (Streamlit) and standalone (OpenCV) applications
-- **🔊 Audio Alerts**: Built-in sound alerts for drowsiness detection
-- **📊 Data Logging**: Comprehensive session data logging and analysis
-- **⚙️ Configurable**: Adjustable detection thresholds and parameters
-- **📈 Analytics**: Built-in data analysis and visualization tools
+- Detects facial landmarks with MediaPipe Face Mesh and calculates Eye Aspect Ratio (EAR) and Mouth Aspect Ratio (MAR).
+- Uses recent metric values and consecutive-frame thresholds to reduce reactions to brief changes.
+- Displays processed frames and detection status; the standalone application can also play an audio alert when audio is available.
+- Accepts uploaded images and videos, a single browser-camera capture, an RTSP/stream URL, and (when `streamlit-webrtc` is installed) a live browser webcam.
+- Saves session summaries as JSON and per-frame measurements as CSV for supported processing flows.
+- Includes an analysis utility for session summaries, detailed CSV sessions, plots, and a text report.
 
-## 📋 System Requirements
+## Architecture and data flow
 
-### Minimum Requirements
-- **OS**: Windows 10, macOS 10.14, or Linux (Ubuntu 18.04+)
-- **Python**: 3.7 or higher
-- **RAM**: 4GB
-- **Camera**: USB webcam or built-in camera
-- **CPU**: Dual-core processor
+```mermaid
+flowchart TD
+    subgraph Inputs
+        Image[Uploaded image]
+        Camera[Browser camera capture]
+        Video[Uploaded video]
+        RTSP[RTSP or stream URL]
+        WebRTC[Optional live browser webcam]
+        Webcam[Local webcam]
+    end
 
-### Recommended Requirements  
-- **Python**: 3.8 or higher
-- **RAM**: 8GB or more
-- **Camera**: HD webcam (720p or higher)
-- **CPU**: Quad-core processor
-- **Audio**: Speakers or headphones for alerts
+    subgraph Apps
+        UI[Streamlit app<br/>streamlit_app.py]
+        Desktop[Standalone app<br/>detect_alone.py]
+    end
 
-## 🚀 Quick Start
+    Image --> UI
+    Camera --> UI
+    Video --> UI
+    RTSP --> UI
+    WebRTC --> UI
+    Webcam --> Desktop
 
-### 1. Download and Setup
+    UI --> Detector[OpenCV frame handling<br/>MediaPipe Face Mesh]
+    Desktop --> Detector
+    Detector --> Metrics[EAR and MAR<br/>smoothing and frame thresholds]
+    Metrics --> Output[Annotated frames and status]
+    Metrics --> Alerts[Optional audio alert<br/>standalone app]
+    Metrics -->|saved processing flows| Logs[Session CSV and JSON files<br/>logs/]
+    Logs --> Analyzer[Session analysis<br/>utils/analysis.py]
+    Analyzer --> Reports[Plots and text report<br/>logs/]
+```
 
-Run automated setup `python setup.py`
+The Streamlit app is the primary multi-input interface. Its optional live WebRTC mode streams processed frames to the browser; session-file saving is performed by the image, video, and RTSP processing flows. The standalone app reads from a local webcam and saves session data when requested or when it exits. Processing uses OpenCV and MediaPipe in the running Python application; the live WebRTC mode is configured with a STUN server.
 
-### 2. Launch Application
+## Requirements
 
-**Option A: Web Interface (Recommended)** `streamlit run detect_offline.py`
+- Python 3.11 is specified in `runtime.txt`; use that version for the environment described here.
+- A webcam is needed for the standalone app, browser-camera capture, or live webcam mode.
+- Speakers are optional; audio alerts depend on the local audio system.
+- On Linux environments, `packages.txt` lists the system packages used by the deployment environment.
 
-**Option B: Standalone Application** `python detect_alone.py`
+Python dependencies are pinned in `requirements.txt`. `streamlit-webrtc` is included there; the app also handles it as an optional import and hides the live webcam mode if it is unavailable.
 
-### 3. Data Analysis (Optional)
-`python utils/analysis.py`
+## Installation
 
-## 📁 Project Structure
+Run these commands from the repository root:
 
-drowsiness_detection_system/  
+```text
+python -m venv .venv
+```
 
-├── 📄 README.md # This file  
-├── 📄 requirements.txt # Python dependencies  
-├── 🔧 setup.py # Automated setup script  
-├── ⚙️ config.py # Configuration management  
-├── 🌐 drowsiness_detection_offline.py # Streamlit web app  
-├── 🖥️ drowsiness_detection_standalone.py # OpenCV standalone app  
-├── 📁 utils/  
-│ ├── 📄 init.py  
-│ └── 📊 analysis.py # Data analysis tools  
-├── 📁 logs/ # Session data (auto-created)  
-├── 📁 config/ # Configuration files (auto-created)  
-└── 📁 data/ # Resources (auto-created)  
+Activate the environment:
 
+```powershell
+# Windows PowerShell
+.venv\Scripts\Activate.ps1
+```
 
-## 🎯 How It Works
+```sh
+# macOS or Linux
+source .venv/bin/activate
+```
 
-### Detection Methods
+Then install the dependencies:
 
-**1. Eye Aspect Ratio (EAR)**
-- Monitors eye openness using facial landmarks
-- Formula: `EAR = (|p2-p6| + |p3-p5|) / (2×|p1-p4|)`
-- Default threshold: 0.25
-- Detects sustained eye closure indicating drowsiness
+```text
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
 
-**2. Mouth Aspect Ratio (MAR)**
-- Detects yawning behavior as early drowsiness indicator
-- Formula: `MAR = (|p2-p8| + |p3-p7| + |p4-p6|) / (3×|p1-p5|)`
-- Default threshold: 0.6
-- Identifies mouth opening patterns characteristic of yawning
+## Run
 
-**3. Temporal Analysis**
-- Consecutive frame validation to reduce false positives
-- Configurable frame thresholds for reliable detection
-- Smoothing algorithms to handle temporary variations
+### Streamlit interface
 
-## 🎮 Application Interfaces
+```text
+streamlit run streamlit_app.py
+```
 
-### Streamlit Web Interface
-- **Modern UI**: Clean, intuitive web interface
-- **Real-time Controls**: Adjustable threshold sliders
-- **Live Metrics**: EAR/MAR values and detection status
-- **Session Management**: Save, reset, and export session data
-- **Responsive Design**: Works on desktop and tablet
+Choose an input mode in the sidebar:
 
-> Tip: For real-time browser webcam streaming install the optional dependency `streamlit-webrtc` (`pip install streamlit-webrtc` or `pip install -r requirements.txt`). If your editor shows `Import "streamlit_webrtc" could not be resolved`, ensure it's installed in the active Python environment.
+- **Image** — upload a PNG, JPG, or JPEG image.
+- **Camera (single shot)** — capture and process one image from the browser camera.
+- **Video** — upload an MP4, MOV, AVI, or MKV file; optionally set a frame limit or process every Nth frame.
+- **RTSP Stream** — provide a stream URL and capture duration.
+- **Live Camera (webcam)** — process browser webcam frames in real time; available when `streamlit-webrtc` is installed.
 
-> For real-time webcam streaming in the browser install the optional dependency `streamlit-webrtc` (`pip install streamlit-webrtc`). Then select **Live Camera (webcam)** in the app.
+The image, video, and RTSP flows offer downloads of their processed media and save session data under `logs/`. The live webcam mode displays processed frames but does not save session files.
 
-### Standalone OpenCV Application
-- **Lightweight**: Minimal resource usage
-- **Direct Processing**: No web browser required
-- **Keyboard Controls**: 
-  - `q`: Quit application
-  - `s`: Save session data
-  - `r`: Reset session statistics
-- **Real-time Overlay**: Metrics displayed on video feed
+### Standalone webcam application
 
-## ⚙️ Configuration
+```text
+python detect_alone.py
+```
 
-### Quick Configuration
-Edit detection thresholds in the web interface or modify `config.py`:
+The application opens the default local camera. Use `q` to quit, `s` to save the current session, or `r` to reset the session totals and recorded data. On shutdown it releases the camera and saves a final session.
 
-Detection Thresholds
-EAR_THRESHOLD = 0.25 # Eye closure sensitivity
-MAR_THRESHOLD = 0.6 # Yawn detection sensitivity
-CONSECUTIVE_FRAMES = 15 # Frames for drowsiness confirmation
-YAWN_FRAMES = 10 # Frames for yawn confirmation
+### Alternate webcam-focused Streamlit application
 
-Camera Settings
-CAMERA_WIDTH = 640
-CAMERA_HEIGHT = 480
+`detect_offline.py` contains a separate Streamlit application that reads from the local webcam:
 
+```text
+streamlit run detect_offline.py
+```
 
-## 📊 Data Analysis
+## Detection and configuration
 
-The system provides comprehensive analytics:
+For each detected face, the detector selects eye and mouth landmarks, calculates EAR and MAR, and averages recent measurements. Drowsiness is flagged when the smoothed EAR remains below its threshold for the configured number of consecutive frames; yawning is flagged when smoothed MAR remains above its threshold for the configured number of frames.
 
-### Session Data
-- **Real-time Metrics**: EAR/MAR values over time
-- **Event Detection**: Drowsiness and yawn events
-- **Statistical Summary**: Blinks, yawns, session duration
-- **Export Options**: CSV and JSON formats
+The detector defaults are EAR `0.3`, MAR `0.6`, 15 consecutive frames for drowsiness, and 10 for yawning. In `streamlit_app.py`, the EAR, MAR, and frame-count thresholds can be adjusted with the sidebar sliders. The standalone app uses the detector defaults.
 
-### Analysis Tools
-- **Trend Analysis**: Performance over multiple sessions
-- **Visualization**: Charts and graphs of detection metrics
-- **Comparative Analysis**: Threshold effectiveness
-- **Report Generation**: Comprehensive session reports
+## Session data and analysis
 
-## 🚨 Alert System
+Session files are written to `logs/`:
 
-### Visual Alerts
-- **On-screen Warnings**: Clear, prominent alert messages
-- **Status Indicators**: Color-coded detection status
-- **Real-time Feedback**: Immediate response to detection events
+- CSV files contain timestamped EAR/MAR values and drowsiness/yawn status for processed frames.
+- JSON files contain a session summary, including duration, event counts, and thresholds.
 
-### Audio Alerts
-- **Sound Notifications**: Generated beep alerts
-- **Configurable**: Adjustable frequency and duration
-- **Multi-platform**: Works on Windows, macOS, Linux
+Run the interactive analysis utility from the repository root:
 
-## 📈 Performance
+```text
+python utils/analysis.py
+```
 
-### Accuracy Metrics
-- **Detection Accuracy**: 92-95% in good lighting conditions
-- **False Positive Rate**: <5% with proper calibration
-- **Response Time**: <100ms from detection to alert
-- **Frame Rate**: 20-30 FPS on standard hardware
+It reads session files from `logs/` and can create summary or detailed plots and a comprehensive text report there. Generate useful analysis by running a detection session and saving data first.
 
-### System Performance
-- **Memory Usage**: 100-200MB typical
-- **CPU Usage**: 15-30% on quad-core systems
-- **Power Consumption**: Low impact on battery life
-- **Compatibility**: Wide range of hardware support
+## Repository layout
 
-## 🔧 Troubleshooting
+```text
+.
+├── streamlit_app.py       # Multi-input Streamlit interface
+├── detect_alone.py        # Standalone OpenCV webcam application and detector
+├── detect_offline.py      # Alternate webcam-focused Streamlit application
+├── config.py              # Configuration helper
+├── setup.py               # Dependency/device setup and checks
+├── requirements.txt       # Pinned Python dependencies
+├── packages.txt           # Linux system packages
+├── runtime.txt            # Python runtime version
+├── utils/
+│   └── analysis.py        # Session analysis and report generation
+└── logs/                  # Session CSV/JSON files and generated reports
+```
 
-### Common Issues
+## Limitations
 
-**Camera Not Detected**
-Try different camera indices
-Edit config.py and change CAMERA_INDEX to 1, 2, etc.
-text
-
-**Poor Detection Accuracy**
-- Ensure good lighting conditions
-- Position camera at eye level
-- Adjust EAR/MAR thresholds in settings
-- Minimize background movement
-
-**Performance Issues**
-- Close other applications
-- Reduce camera resolution
-- Update graphics drivers
-- Check CPU usage
-
-**Audio Alerts Not Working**
-- Check system audio settings
-- Verify pygame installation
-- Test with different audio devices
-
-## 🎯 Use Cases
-
-### Personal Safety
-- **Driver Monitoring**: Personal vehicle safety
-- **Study Sessions**: Academic work monitoring
-- **Night Shift Work**: Fatigue detection for workers
-
-### Professional Applications  
-- **Fleet Management**: Commercial vehicle monitoring
-- **Industrial Safety**: Heavy machinery operation
-- **Healthcare**: Patient monitoring applications
-- **Research**: Academic studies and data collection
-
----
-
-**🚗 Drive Safe, Stay Alert!** 
-
-This system is designed to enhance safety through technology, providing reliable drowsiness detection without compromising privacy or requiring internet connectivity.
+Detection depends on visible facial landmarks, camera placement, and lighting, and can produce incorrect results. Treat alerts as an aid rather than a substitute for rest or safe operating practices.
